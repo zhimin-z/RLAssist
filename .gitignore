@@ -1,1 +1,4 @@
-ignore all logs *.log
+*.log
+*.pyc
+*.npy
+*.db
