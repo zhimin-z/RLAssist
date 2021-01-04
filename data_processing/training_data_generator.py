@@ -41,7 +41,6 @@ def generate_name_dict_store(db_path, bins):
 def generate_training_data(db_path, bins, validation_users, min_program_length, max_program_length, \
                                     max_fix_length, max_mutations, max_variants, seed):
     rng = np.random.RandomState(seed)
-    tokenize = C_Tokenizer().tokenize
     convert_to_new_line_format = C_Tokenizer().convert_to_new_line_format
 
     mutator_obj = Typo_Mutate(rng)
@@ -121,11 +120,11 @@ def generate_training_data(db_path, bins, validation_users, min_program_length, 
     print('Total mutate calls:', total_mutate_calls)
     print('Exceptions in mutate() call:', exceptions_in_mutate_call, '\n')
 
-    for key in token_strings:
+    '''for key in token_strings:
         print(key)
         for problem_id in token_strings[key]:
             print(problem_id, len(token_strings[key][problem_id]))
-
+    '''
     return token_strings, mutator_obj.get_mutation_distribution()
 
 
@@ -159,12 +158,12 @@ def build_dictionary(token_strings, tldict={}):
 def vectorize(tokens, tldict, max_vector_length):
     vec_tokens = []
     for token in tokens.split():
-        try:
+        if token in tldict:
             vec_tokens.append(tldict[token])
-        except Exception:
+        '''except Exception:
             print(token)
             raise
-
+        '''
     if len(vec_tokens) > max_vector_length:
         return None
 
@@ -217,7 +216,6 @@ def save_bins(destination, tldict, token_vectors, bins, name_dict_store):
     for i, bin_ in enumerate(bins):
         test_problems = bin_
         training_problems = list(set(full_list) - set(bin_))
-
         token_vectors_this_fold = { 'train': {}, 'validation': {}, 'test': {} }
 
         for problem_id in training_problems:
@@ -230,9 +228,9 @@ def save_bins(destination, tldict, token_vectors, bins, name_dict_store):
                         variant += 1
                     variant = 1
                     code_id = temp_code_id
-
                     token_vectors_this_fold['train'][code_id] = (inc_prog_vector, corr_prog_vector)
 
+            if problem_id in token_vectors['validation']:
                 for code_id, inc_prog_vector, corr_prog_vector in token_vectors['validation'][problem_id]:
                     variant = 1
                     temp_code_id = code_id
@@ -241,11 +239,10 @@ def save_bins(destination, tldict, token_vectors, bins, name_dict_store):
                         variant += 1
                     variant = 1
                     code_id = temp_code_id
-
                     token_vectors_this_fold['validation'][code_id] = (inc_prog_vector, corr_prog_vector)
 
         for problem_id in test_problems:
-            if problem_id in token_vectors['train']:
+            if problem_id in token_vectors['validation']:
                 for code_id, inc_prog_vector, corr_prog_vector in token_vectors['validation'][problem_id]:
                     variant = 1
                     temp_code_id = code_id
@@ -296,5 +293,5 @@ if __name__=='__main__':
 
     save_bins(output_directory, tl_dict, token_vectors, bins, name_dict_store)
 
-    print('\n\n---------------all outputs written to {}---------------\n\n'.format(output_directory))
+    print('\n\n-----all outputs written to {}-----\n\n'.format(output_directory))
 
