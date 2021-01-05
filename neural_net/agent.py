@@ -15,19 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import threading
 import os
 import sys
 import math
 import argparse
 import copy
-import sqlite3
 import psutil
-import json
+import threading
 import multiprocessing
 import numpy as np
 import scipy.signal
-import pickle as cp
 
 from time import sleep, time, strftime
 from util.helpers import make_dir_if_not_exists, logger, prepare_batch, experience, get_best_checkpoint, coin_flip, Compilation_error_db, done
